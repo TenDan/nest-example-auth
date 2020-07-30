@@ -1,17 +1,17 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserDataDto } from './dto/userData.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 
+export type UsersRepository = Repository<User>
 @Injectable()
 export class UsersService {
-  private users: User[];
 
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: UsersRepository,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -59,6 +59,6 @@ export class UsersService {
 
     this.usersRepository.save([user]);
 
-    return user;
+    return {status: 'Success', userData: {...user}};
   }
 }
