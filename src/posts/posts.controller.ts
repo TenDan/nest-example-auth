@@ -1,6 +1,6 @@
 import { PostsService } from './posts.service';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
-import { Controller, Get, Post, UseGuards, Req, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Req, Body, Param, Put, Delete, Query } from '@nestjs/common';
 
 @Controller('posts')
 export class PostsController {
@@ -10,8 +10,8 @@ export class PostsController {
   ) {}
 
   @Get()
-  async showAllPosts() {
-    return this.postsService.findAll();
+  async showAllPosts(@Query('sortBy') sortBy, @Query('orderBy') orderBy) {
+    return this.postsService.findAll({sortBy, orderBy});
   }
 
   @Get(':id')

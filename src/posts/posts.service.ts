@@ -1,8 +1,9 @@
+import { Entity } from 'typeorm';
 import { PostToEditDataDto } from './dto/postToEditData.dto';
 import { User } from './../users/user.entity';
 import { PostDataDto } from './dto/postData.dto';
 import { Post } from './post.entity';
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersRepository } from '../users/users.service';
@@ -18,19 +19,28 @@ export class PostsService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async findAll(): Promise<Post[]> {
-    return this.postsRepository.find({
+  async findAll<T extends keyof any>(options: { sortBy?: T, orderBy?: "ASC" | "DESC" | 1 | -1}): Promise<Post[]> {
+    const posts = await this.postsRepository.find({
       relations: ['user'],
+      order: options.sortBy ? {
+        [options.sortBy]: options.orderBy
+      } : {
+        createdAt: options.orderBy || "ASC"
+      }
     });
+    if (!posts || posts.length === 0) throw new NotFoundException("No posts were found");
+    return posts;
   }
 
   async findOne(id: string): Promise<Post | undefined> {
-    return this.postsRepository.findOne({
+    const post = await this.postsRepository.findOne({
       where: {
         id
       },
       relations: ['user']
     });
+    if (!post) throw new NotFoundException("Post with that id not found");
+    return post;
   }
 
   async create(user: any, postData: PostDataDto): Promise<any> {
@@ -63,7 +73,7 @@ export class PostsService {
     });
     const postToEdit = await this.postsRepository.findOne(id);
     if (!postToEdit)
-      throw new HttpException('Post with that id not found', 404);
+      throw new NotFoundException('Post with that id not found');
 
     const postAndUserCorrection = await this.postsRepository.findOne({
       where: {
@@ -95,7 +105,7 @@ export class PostsService {
         id
       }
     });
-    if (!postToDelete) throw new HttpException('Post with that id not found', 404);
+    if (!postToDelete) throw new NotFoundException('Post with that id not found');
 
     const postAndUserCorrection = await this.postsRepository.findOne({
       where: {

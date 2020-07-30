@@ -12,8 +12,9 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
-    if (user && bcrypt.compare(password, user.password)) {
+    const user = await this.usersService.findOne(username, {select: ['id', 'username', 'password']});
+    const passwordIsRight = bcrypt.compareSync(password, user.password);
+    if (user && passwordIsRight) {
       // eslint-disable-next-line
       const { password, ...result } = user;
       return result;
