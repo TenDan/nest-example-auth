@@ -1,3 +1,4 @@
+import { ShowAllPostsQueryDto } from './dto/showAllPostsQuery.dto';
 import { PostsService } from './posts.service';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { Controller, Get, Post, UseGuards, Req, Body, Param, Put, Delete, Query } from '@nestjs/common';
@@ -10,7 +11,7 @@ export class PostsController {
   ) {}
 
   @Get()
-  async showAllPosts(@Query('sortBy') sortBy, @Query('orderBy') orderBy) {
+  async showAllPosts(@Query() {sortBy, orderBy}: ShowAllPostsQueryDto) {
     return this.postsService.findAll({sortBy, orderBy});
   }
 
